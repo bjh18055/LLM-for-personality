@@ -5,3 +5,8 @@ __pycache__/
 
 data/
 cache/
+
+# 일기 데이터가 담긴 런타임 업로드용 번들 — 절대 커밋 금지
+diary-lmdb.tar.gz
+*.tar.gz
+log/

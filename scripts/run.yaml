@@ -1,9 +1,24 @@
 name: test
 description: LoRA training via scripts/run_train.sh
+image: nvcr.io/nvidia/pytorch:24.05-py3
 
 resources:
-  cluster: snu-eng-dgx-heavy
+  cluster: snu-eng-dgx
   preset: a100-1
+
+import:
+  # 코드: 공개 GitHub repo 에서 clone. <you>/<repo> 를 실제 값으로 교체.
+  /input: git://github.com/<you>/<repo>
+  # 데이터: 배치 런은 로컬 파일 업로드가 안 되므로, 개인 일기 데이터를 쓰려면
+  # VESSL Dataset 을 미리 만들어 아래처럼 마운트해야 한다. 단, snu-eng-dgx-heavy 는
+  # 공용 조직이라 민감 데이터를 Dataset 으로 올리면 조직 내 노출 위험이 있다.
+  # 프라이버시가 중요하면 배치 대신 인터랙티브 워크스페이스를 쓰자:
+  #   REPO_URL=... bash scripts/run_workspace.sh   (데이터를 워크스페이스에만 업로드)
+  # /input/data: vessl-dataset://snu-eng-dgx-heavy/<dataset-name>
+
+export:
+  # 학습 결과(LoRA adapter, 로그)를 VESSL Artifact 로 보존. 컨테이너가 사라져도 남는다.
+  /input/log: vessl-artifact://
 
 run:
   - workdir: /input
