@@ -12,11 +12,22 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 PROJECT_ROOT="$(pwd)"
 
-TARBALL="${TARBALL:-/root/diary-lmdb.tar.gz}"
+# 업로드 위치가 환경마다 다를 수 있어(홈, Jupyter cwd, 프로젝트 루트) 후보를 훑는다.
+TARBALL="${TARBALL:-}"
+if [ -z "$TARBALL" ]; then
+  for cand in \
+    "$HOME/diary-lmdb.tar.gz" \
+    "/root/diary-lmdb.tar.gz" \
+    "$PROJECT_ROOT/diary-lmdb.tar.gz" \
+    "$(pwd)/diary-lmdb.tar.gz"; do
+    if [ -f "$cand" ]; then TARBALL="$cand"; break; fi
+  done
+fi
 
-if [ ! -f "$TARBALL" ]; then
-  echo "[ERROR] 업로드된 번들을 찾지 못했습니다: $TARBALL"
-  echo "        워크스페이스 생성 시 --upload-local-file 로 올렸는지 확인하세요."
+if [ -z "$TARBALL" ] || [ ! -f "$TARBALL" ]; then
+  echo "[ERROR] 업로드된 번들(diary-lmdb.tar.gz)을 찾지 못했습니다."
+  echo "        Jupyter/VSCode 로 홈(~/)에 업로드했는지 확인하거나,"
+  echo "        TARBALL=<경로> 로 직접 지정하세요."
   exit 1
 fi
 
