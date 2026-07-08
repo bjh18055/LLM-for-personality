@@ -1,0 +1,6 @@
+torch>=2.12.0
+transformers>=5.9.0
+accelerate>=1.0
+peft>=0.13
+wandb>=0.18
+lmdb>=2.2.0

@@ -1,0 +1,11 @@
+name: test
+description: LoRA training via scripts/run_train.sh
+
+resources:
+  cluster: snu-eng-dgx-heavy
+  preset: a100-1
+
+run:
+  - workdir: /input
+    command: |
+      bash scripts/run_train.sh
