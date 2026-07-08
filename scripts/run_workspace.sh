@@ -16,7 +16,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-REPO_URL="${REPO_URL:?REPO_URL 을 지정하세요 (예: https://github.com/you/repo.git)}"
+REPO_URL="${REPO_URL:-https://github.com/bjh18055/LLM-for-personality.git}"
 REPO_DIR="${REPO_DIR:-LLM-for-personality}"
 BRANCH="${BRANCH:-main}"
 

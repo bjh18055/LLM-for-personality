@@ -7,8 +7,8 @@ resources:
   preset: a100-1
 
 import:
-  # 코드: 공개 GitHub repo 에서 clone. <you>/<repo> 를 실제 값으로 교체.
-  /input: git://github.com/<you>/<repo>
+  # 코드: 공개 GitHub repo 에서 clone.
+  /input: git://github.com/bjh18055/LLM-for-personality
   # 데이터: 배치 런은 로컬 파일 업로드가 안 되므로, 개인 일기 데이터를 쓰려면
   # VESSL Dataset 을 미리 만들어 아래처럼 마운트해야 한다. 단, snu-eng-dgx-heavy 는
   # 공용 조직이라 민감 데이터를 Dataset 으로 올리면 조직 내 노출 위험이 있다.
