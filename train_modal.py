@@ -20,11 +20,12 @@ Modal 서버리스 래퍼: 기존 train.py / dataset.py 를 그대로 GPU 잡으
     modal run train_modal.py --epochs 3
     # 하이퍼파라미터: --epochs --batch-size --lr --instagram-ids --lora-r --lora-alpha
 
-결과 회수
+결과 회수 (로컬 대상은 반드시 폴더로 — 끝에 / 또는 미리 mkdir)
     modal volume ls diary-output
-    modal volume get diary-output <run_dir> ./results
+    mkdir -p results && modal volume get diary-output <run_dir> results/
 """
 
+import glob
 import os
 import shutil
 import subprocess
@@ -157,14 +158,24 @@ def train(
         "--lora_alpha", str(lora_alpha),
         "--instagram_ids", *instagram_ids.split(),
         "--logging_steps", "1",
+        # LMDB env 는 fork 된 DataLoader 워커와 충돌하므로 워커를 끈다.
+        # (데이터셋이 작아 num_workers>0 의 이득도 없음.)
+        "--num_workers", "0",
     ]
     print("[train] 실행:", " ".join(cmd))
     subprocess.run(cmd, cwd=WORKDIR, check=True)
 
     out_vol.commit()
-    print(f"[train] 완료. 결과 저장 위치(볼륨): {output_dir}")
-    print(f"[train] 로컬 다운로드: modal volume get diary-output {run_name} ./results")
-    return run_name
+
+    # train.py 는 output_dir 뒤에 _YYYYMMDD-HHMMSS 를 붙이므로 실제 폴더명을 찾는다.
+    matches = sorted(glob.glob(output_dir + "_*"))
+    actual = os.path.basename(matches[-1]) if matches else run_name
+    print(f"[train] 완료. 결과 저장(볼륨): /out/{actual}")
+    print(
+        f"[train] 로컬 다운로드: "
+        f"mkdir -p results && modal volume get diary-output {actual} results/"
+    )
+    return actual
 
 
 @app.local_entrypoint()
@@ -189,4 +200,7 @@ def main(
         instagram_ids=instagram_ids,
     )
     print(f"\n실행 완료: {run_name}")
-    print(f"결과 다운로드: modal volume get diary-output {run_name} ./results")
+    print(
+        f"결과 다운로드: mkdir -p results && "
+        f"modal volume get diary-output {run_name} results/"
+    )
