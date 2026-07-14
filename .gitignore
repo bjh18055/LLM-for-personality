@@ -10,3 +10,6 @@ cache/
 diary-lmdb.tar.gz
 *.tar.gz
 log/
+
+# Modal 결과 다운로드 폴더
+results/

@@ -45,11 +45,7 @@ echo "[INFO] 데이터 번들 준비..."
 bash scripts/pack_data.sh
 echo "[INFO] 위 diary-lmdb.tar.gz 를 워크스페이스 웹 UI 로 업로드하세요 (아래 안내 참고)."
 
-# AUTO_TRAIN=1 이면 백그라운드 감시자를 띄워, 데이터가 업로드되는 즉시 학습을
-# 자동 실행한다 (진행상황은 워크스페이스 안 ~/train.out 에 기록).
-AUTO_TRAIN="${AUTO_TRAIN:-1}"
-
-# --- init-script: 컨테이너 시작 시 코드 clone + 의존성 설치 (+ 감시자 기동) ---
+# --- init-script: 컨테이너 시작 시 코드 clone + 의존성 설치 ---
 INIT_SCRIPT=$(cat <<INIT
 set -e
 cd \$HOME
@@ -60,15 +56,9 @@ cd \$HOME/${REPO_DIR}
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 echo "[init] 코드/의존성 준비 완료."
-if [ "${AUTO_TRAIN}" = "1" ]; then
-  nohup bash scripts/watch_and_train.sh > \$HOME/train.out 2>&1 &
-  echo "[init] 감시자 기동됨 (pid \$!). ~/diary-lmdb.tar.gz 업로드 시 학습 자동 시작."
-  echo "[init] 진행 확인: tail -f ~/train.out"
-else
-  echo "[init] 데이터 업로드 후 수동 실행:"
-  echo "[init]   TARBALL=\\\$HOME/diary-lmdb.tar.gz bash scripts/prepare_data_in_container.sh"
-  echo "[init]   bash scripts/run_train.sh"
-fi
+echo "[init] 이제 diary-lmdb.tar.gz 를 업로드한 뒤 아래를 실행하세요:"
+echo "[init]   TARBALL=\\\$HOME/diary-lmdb.tar.gz bash \\\$HOME/${REPO_DIR}/scripts/prepare_data_in_container.sh"
+echo "[init]   cd \\\$HOME/${REPO_DIR} && bash scripts/run_train.sh"
 INIT
 )
 
@@ -85,13 +75,13 @@ vessl workspace create "${WS_NAME}" \
 cat <<'GUIDE'
 
 ──────────────────────────────────────────────────────────────
-다음 단계 (AUTO_TRAIN=1 기준, 당신이 할 일은 파일 업로드 하나뿐):
+다음 단계:
  1) 위 출력의 워크스페이스 URL 을 브라우저로 연다 (또는 `vessl workspace list`).
  2) Status 가 running 이 되면 Jupyter(또는 VSCode)를 연다.
  3) diary-lmdb.tar.gz 를 홈(~/)에 드래그해서 업로드한다 (768K, 수 초).
-    → 감시자가 즉시 감지하여 데이터 배치 + 학습을 자동 시작한다.
- 4) 진행 확인: 워크스페이스 터미널에서 `tail -f ~/train.out`
- * 결과(LoRA adapter)는 ~/LLM-for-personality/log/ 아래에 저장된다.
+ 4) 워크스페이스 터미널에서 실행:
+      TARBALL=~/diary-lmdb.tar.gz bash ~/LLM-for-personality/scripts/prepare_data_in_container.sh
+      cd ~/LLM-for-personality && bash scripts/run_train.sh
  * 대화형 SSH 접속: `vessl workspace ssh`
 ──────────────────────────────────────────────────────────────
 GUIDE
